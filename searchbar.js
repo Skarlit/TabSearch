@@ -12,9 +12,70 @@ function init(){
 
   var searchbar = document.getElementById('search');
   searchbar.focus();
-  searchbar.addEventListener('keyup', filter)
+  searchbar.addEventListener('keyup', keyInputHandler)
 }
 
+function keyInputHandler(event){
+  if(!event.altKey && !event.ctrlKey){
+    if(event.keyIdentifier == "Enter"){
+      var resultList = document.getElementById('result');
+      for(var i = 0; i < resultList.children.length; i++){
+        if(hasClass(resultList.children[i], 'active')){
+          var id = parseInt(resultList.children[i].dataset.id);
+          chrome.tabs.update(id, {selected: true});
+        }
+      }
+    }else{
+      filter(event);
+    }
+  }
+}
+
+
+function addClass(domElement, classname){
+  var case1 = new RegExp(classname + " ");
+  var case2 = new RegExp(" " + classname);
+  var case3 = new RegExp("^" + classname + "$");
+  if(domElement.className.length == 0){
+    domElement.className += classname;
+  }
+  else if(
+    domElement.className.search(case1) < 0 &&
+    domElement.className.search(case2) < 0 &&
+    domElement.className.search(case3) < 0 ){
+
+    domElement.className += (" " + classname);
+  }
+}
+
+function hasClass(domElement, classname){
+  var case1 = new RegExp(classname + " ");
+  var case2 = new RegExp(" " + classname);
+  var case3 = new RegExp("^" + classname + "$");
+  if(
+    domElement.className.search(case1) > -1 ||
+    domElement.className.search(case2) > -1 ||
+    domElement.className.search(case3) > -1 ){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+function removeClass(domElement, classname){
+  var case1 = new RegExp(classname + " ");
+  var case2 = new RegExp(" " + classname);
+  var case3 = new RegExp("^" + classname + "$");
+  if(domElement.className.search(case1) > -1){
+    domElement.className = domElement.className.replace(case1, "");
+  }
+  else if(domElement.className.search(case2) > -1){
+    domElement.className = domElement.className.replace(case2, "");
+  }
+  else if(domElement.className.search(case3) > -1){
+    domElement.className = domElement.className.replace(case3, "");
+  }
+}
 
 
 function filter(event){
@@ -33,43 +94,43 @@ function filter(event){
 
   var matched = true;
 
-  for(var i = 0; i < TabSearch.tabs.length; i++){
-    for(var j = 0; j < firstPass.length; j++){
-      if(TabSearch.tabs[i].url.search(firstPass[j]) > -1 || 
-        TabSearch.tabs[i].title.search(firstPass[j]) > -1 ){
-        //result.push(TabSearch.tabs[i]);
-      }else{
-        matched = false;
+  if(searchStr.length > 0){
+    for(var i = 0; i < TabSearch.tabs.length; i++){
+      for(var j = 0; j < firstPass.length; j++){
+        if(TabSearch.tabs[i].url.search(firstPass[j]) < 0 && 
+          TabSearch.tabs[i].title.search(firstPass[j]) < 0 ){
+          matched = false;
+        }
+      }
+      if(matched){
+        result.push(TabSearch.tabs[i])
+        checked[TabSearch.tabs[i].id] = true;
+      }
+      matched = true;
+      if(result.length > 6){
+        break;
       }
     }
-    if(matched){
-      result.push(TabSearch.tabs[i])
-      checked[TabSearch.tabs[i].id] = true;
-    }
-    matched = true;
-    if(result.length > 6){
-      break;
+
+    if(result.length < 6){
+      for(var i = 0; i < TabSearch.tabs.length; i++){
+        if(!checked[TabSearch.tabs[i]]){
+          if(TabSearch.tabs[i].url.search(secondPass) > -1 || 
+            TabSearch.tabs[i].title.search(secondPass) > -1 ){
+            result.push(TabSearch.tabs[i]);
+          }
+        }
+      }
     }
   }
-
-  // if(result.length < 6){
-  //   for(var i = 0; i < TabSearch.tabs.length; i++){
-  //     if(!checked[TabSearch.tabs[i]]){
-  //       if(TabSearch.tabs[i].url.search(secondPass) > -1 || 
-  //         TabSearch.tabs[i].title.search(secondPass) > -1 ){
-  //         result.push(TabSearch.tabs[i]);
-  //       }
-  //     }
-  //   }
-  // }
 
   var resultList = document.getElementById('result');
   resultList.innerHTML ="";
   for(var i = 0; i < result.length; i++){
     appendResult(result[i]);
   }
+  addClass(resultList.children[0], "active");
 }
-
 
 function appendResult(tab){
   var tabEntry = document.createElement('li');
