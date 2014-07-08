@@ -18,19 +18,30 @@ function init(){
 function keyInputHandler(event){
   if(!event.altKey && !event.ctrlKey){
     if(event.keyIdentifier == "Enter"){
-      var resultList = document.getElementById('result');
-      for(var i = 0; i < resultList.children.length; i++){
-        if(hasClass(resultList.children[i], 'active')){
-          var id = parseInt(resultList.children[i].dataset.id);
-          chrome.tabs.update(id, {selected: true});
-        }
+      chrome.tabs.update(
+        parseInt(TabSearch.activeElement.dataset.id),
+        {selected: true}
+      );
+    }
+    else if(event.keyIdentifier == "PageUp"){
+      if(TabSearch.activeElement.previousSibling){
+        removeClass(TabSearch.activeElement, "active");
+        TabSearch.activeElement = TabSearch.activeElement.previousSibling;
+        addClass(TabSearch.activeElement, "active");
       }
-    }else{
+    }
+    else if(event.keyIdentifier == "PageDown"){
+      if(TabSearch.activeElement.nextSibling){
+        removeClass(TabSearch.activeElement, "active");
+        TabSearch.activeElement = TabSearch.activeElement.nextSibling;
+        addClass(TabSearch.activeElement, "active");
+      }
+    }
+    else{
       filter(event);
     }
   }
 }
-
 
 function addClass(domElement, classname){
   var case1 = new RegExp(classname + " ");
@@ -77,7 +88,6 @@ function removeClass(domElement, classname){
   }
 }
 
-
 function filter(event){
   var searchStr = event.target.value
 
@@ -107,18 +117,21 @@ function filter(event){
         checked[TabSearch.tabs[i].id] = true;
       }
       matched = true;
-      if(result.length > 6){
+      if(result.length > 4){
         break;
       }
     }
 
     if(result.length < 6){
       for(var i = 0; i < TabSearch.tabs.length; i++){
-        if(!checked[TabSearch.tabs[i]]){
+        if(!checked[TabSearch.tabs[i].id]){
           if(TabSearch.tabs[i].url.search(secondPass) > -1 || 
             TabSearch.tabs[i].title.search(secondPass) > -1 ){
             result.push(TabSearch.tabs[i]);
           }
+        }
+        if(result.length > 4){
+          break;
         }
       }
     }
@@ -129,7 +142,10 @@ function filter(event){
   for(var i = 0; i < result.length; i++){
     appendResult(result[i]);
   }
-  addClass(resultList.children[0], "active");
+  if(searchStr.length > 0){
+    TabSearch.activeElement = resultList.children[0];
+    addClass(resultList.children[0], "active");
+  }
 }
 
 function appendResult(tab){
