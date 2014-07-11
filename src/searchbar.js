@@ -18,19 +18,24 @@ function init(){
 function keyInputHandler(event){
   if(!event.altKey && !event.ctrlKey){
     if(event.keyIdentifier == "Enter"){
+      var tabId = parseInt(TabSearch.activeElement.dataset.id);
+      chrome.tabs.get(tabId, function(tab){
+        chrome.windows.update(tab.windowId, {focused: true}, function(window){
+        })
+      })
       chrome.tabs.update(
-        parseInt(TabSearch.activeElement.dataset.id),
+        tabId,
         {selected: true}
-      );
+      );         
     }
-    else if(event.keyIdentifier == "PageUp"){
+    else if(event.keyIdentifier == "Up"){
       if(TabSearch.activeElement.previousSibling){
         removeClass(TabSearch.activeElement, "active");
         TabSearch.activeElement = TabSearch.activeElement.previousSibling;
         addClass(TabSearch.activeElement, "active");
       }
     }
-    else if(event.keyIdentifier == "PageDown"){
+    else if(event.keyIdentifier == "Down"){
       if(TabSearch.activeElement.nextSibling){
         removeClass(TabSearch.activeElement, "active");
         TabSearch.activeElement = TabSearch.activeElement.nextSibling;
