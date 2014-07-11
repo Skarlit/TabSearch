@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
                 chrome.tabs.update(
                     tabId,
                     {selected: true}
-                );         
+                );
+                window.close();         
             }
             else if(event.keyIdentifier == "Up"){
                 if(this.activeElement.previousSibling){
