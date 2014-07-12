@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
     }
 
     TabSearch.prototype.navigation = function(event) {
-        if(event.keyIdentifier == "Up"){
+        //Up 
+        if(event.keyCode === 38 ){
             if(this.activeElement.previousSibling){
                     removeClass(this.activeElement, "active");
                     this.activeElement = this.activeElement.previousSibling;
@@ -29,7 +30,8 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
                 }
             event.preventDefault();
         }
-        else if(event.keyIdentifier == "Down"){
+        //Down
+        else if(event.keyCode === 40 ){
             if(this.activeElement.nextSibling){
                 removeClass(this.activeElement, "active");
                 this.activeElement = this.activeElement.nextSibling;
