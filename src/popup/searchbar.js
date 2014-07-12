@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
         //Initializing UI and keyHandling
         this.searchbar = document.getElementById('search');
         this.searchbar.focus();
+        window.addEventListener('keydown', this.navigation.bind(this));
         this.searchbar.addEventListener('keyup', this.keyInputHandler.bind(this));
         this.resultList = document.getElementById('result');
 
@@ -19,8 +20,31 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
         })
     }
 
+    TabSearch.prototype.navigation = function(event) {
+        if(event.keyIdentifier == "Up"){
+            if(this.activeElement.previousSibling){
+                    removeClass(this.activeElement, "active");
+                    this.activeElement = this.activeElement.previousSibling;
+                    addClass(this.activeElement, "active");
+                }
+            event.preventDefault();
+        }
+        else if(event.keyIdentifier == "Down"){
+            if(this.activeElement.nextSibling){
+                removeClass(this.activeElement, "active");
+                this.activeElement = this.activeElement.nextSibling;
+                addClass(this.activeElement, "active");
+            }
+            event.preventDefault();
+        }
+    };
+
     TabSearch.prototype.keyInputHandler = function(event) {
-        if(!event.altKey && !event.ctrlKey){
+        if(!event.altKey &&
+           !event.ctrlKey &&
+           event.keyIdentifier !== 'Up' &&
+           event.keyIdentifier !== 'Down'
+           ){
             if(event.keyIdentifier == "Enter" && this.activeElement){
                 var tabId = parseInt(this.activeElement.dataset.id);
                 chrome.tabs.get(tabId, function(tab){
@@ -31,20 +55,6 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
                     {selected: true}
                 );
                 window.close();         
-            }
-            else if(event.keyIdentifier == "Up"){
-                if(this.activeElement.previousSibling){
-                    removeClass(this.activeElement, "active");
-                    this.activeElement = this.activeElement.previousSibling;
-                    addClass(this.activeElement, "active");
-                }
-            }
-            else if(event.keyIdentifier == "Down"){
-                if(this.activeElement.nextSibling){
-                    removeClass(this.activeElement, "active");
-                    this.activeElement = this.activeElement.nextSibling;
-                    addClass(this.activeElement, "active");
-                }
             }
             else{
                 this.filter(event);
