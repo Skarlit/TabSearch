@@ -1,8 +1,23 @@
-document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch();}, false);
+document.addEventListener('DOMContentLoaded', 
+    function(){ 
+        chrome.storage.sync.get('setting', function(config){
+          debugger
+            var ts = new TabSearch(config['setting']);     
+        })
+    }, 
+false);
 
 (function(root){
-    var TabSearch = root.TabSearch = function (){
-
+    var TabSearch = root.TabSearch = function (setting){
+        if(setting){
+            this.setting = setting;
+        }else{
+            this.setting = {
+                'upKey' : 38,
+                'downKey' : 40
+            }
+        }
+        debugger
         //Initializing UI and keyHandling
         this.searchbar = document.getElementById('search');
         this.searchbar.focus();
@@ -22,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
 
     TabSearch.prototype.navigation = function(event) {
         //Up 
-        if(event.keyCode === 38 ){
+        debugger
+        if(event.keyCode == this.setting['upKey'] ){
             if(this.activeElement.previousSibling){
                     removeClass(this.activeElement, "active");
                     this.activeElement = this.activeElement.previousSibling;
@@ -31,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
             event.preventDefault();
         }
         //Down
-        else if(event.keyCode === 40 ){
+        else if(event.keyCode == this.setting['downKey'] ){
             if(this.activeElement.nextSibling){
                 removeClass(this.activeElement, "active");
                 this.activeElement = this.activeElement.nextSibling;
@@ -44,8 +60,8 @@ document.addEventListener('DOMContentLoaded', function(){ var ts = new TabSearch
     TabSearch.prototype.keyInputHandler = function(event) {
         if(!event.altKey &&
            !event.ctrlKey &&
-           event.keyIdentifier !== 'Up' &&
-           event.keyIdentifier !== 'Down'
+           event.keyCode != this.setting['upKey'] &&
+           event.keyCode != this.setting['downKey']
            ){
             if(event.keyIdentifier == "Enter" && this.activeElement){
                 var tabId = parseInt(this.activeElement.dataset.id);

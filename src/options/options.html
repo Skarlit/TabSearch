@@ -1,6 +1,7 @@
 <html>
 <head>
   <title>TabSearch Configuration</title>
+  <script src="options.js"> </script> 
 </head>
 <body>
  <h2> Configuration</h2>
@@ -10,7 +11,6 @@
       <option value="38">Up Arrow</option>
       <option value="219"> [  </option>
       <option value="33"> PageUp </option>
-      <option value="104">numpad 8</option>
     </select>
   </label>
   <br>
@@ -18,13 +18,13 @@
     <select id="downKey">
       <option value="40">Down Arrow</option>
       <option value="221"> ] </option>
-      <option value="38"> PageDown</option>
-      <option value="98"> numpad 2</option>
+      <option value="34"> PageDown</option>
     </select>
   </label>  
   <br> <br>
-  <button>Save</button>
+  <button id="save">Save</button>
 
-  <script src="options.js"> </script> 
+  <p id="output">  </p>
+
 </body>
 </html>

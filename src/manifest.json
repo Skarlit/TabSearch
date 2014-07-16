@@ -3,10 +3,11 @@
 
   "name": "TabSearch",
   "description": "Hopping between tabs",
-  "version": "1.0.1",
+  "version": "1.0.2",
 
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage"
   ],
 
   "options_page": "options/options.html"
