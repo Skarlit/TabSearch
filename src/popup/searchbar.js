@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', 
     function(){ 
         chrome.storage.sync.get('setting', function(config){
-          debugger
             var ts = new TabSearch(config['setting']);     
         })
     }, 
@@ -14,10 +13,10 @@ false);
         }else{
             this.setting = {
                 'upKey' : 38,
-                'downKey' : 40
+                'downKey' : 40,
+                'numOfResult' : 6
             }
         }
-        debugger
         //Initializing UI and keyHandling
         this.searchbar = document.getElementById('search');
         this.searchbar.focus();
@@ -37,7 +36,6 @@ false);
 
     TabSearch.prototype.navigation = function(event) {
         //Up 
-        debugger
         if(event.keyCode == this.setting['upKey'] ){
             if(this.activeElement.previousSibling){
                     removeClass(this.activeElement, "active");
@@ -82,57 +80,43 @@ false);
 
     TabSearch.prototype.filter = function(event) {
         var searchStr = event.target.value
-        var first = searchStr.split(' ');
-        var firstPass = [];
-        var secondPass = new RegExp(searchStr.replace(/\s*/,"").split('').join('.*'), 'i');
+        var keywords = searchStr.split(' ');
+        var keywordRegex = [];
         var result = [];
         var checked = {};
         var matched = true;
 
-        for(var i = 0; i < first.length; i++){
-            firstPass.push(new RegExp(first[i],'i'));
+        // Storing search keywords.
+        for(var i = 0; i < keywords.length; i++){
+            keywordRegex.push(new RegExp(keywords[i],'i'));
         }
 
         if(searchStr.length > 0){
-          for(var i = 0; i < this.tabs.length; i++){
-              for(var j = 0; j < firstPass.length; j++){
-                  if(this.tabs[i].url.search(firstPass[j]) < 0 && 
-                      this.tabs[i].title.search(firstPass[j]) < 0 ){
-                      matched = false;
-                  }
-              }
-              if(matched){
-                  result.push(this.tabs[i])
-                  checked[this.tabs[i].id] = true;
-              }
-              matched = true;
-              if(result.length > 4){
-                  break;
-              }
-          }
-
-          if(result.length < 6){
-              for(var i = 0; i < this.tabs.length; i++){
-                  if(!checked[this.tabs[i].id]){
-                      if(this.tabs[i].url.search(secondPass) > -1 || 
-                        this.tabs[i].title.search(secondPass) > -1 ){
-                          result.push(this.tabs[i]);
-                      }
-                  }
-                  if(result.length > 4){
-                      break;
-                  }
-              }
-          }
+            for(var i = 0; i < this.tabs.length; i++){
+                for(var j = 0; j < keywordRegex.length; j++){
+                    if(this.tabs[i].url.search(keywordRegex[j]) < 0 && 
+                        this.tabs[i].title.search(keywordRegex[j]) < 0 ){
+                        matched = false;
+                    }
+                }
+                if(matched){
+                    result.push(this.tabs[i])
+                    checked[this.tabs[i].id] = true;
+                }
+                matched = true;
+                if(result.length >= this.setting['numOfResult']){
+                    break;
+                }
+            }
         }
       
         this.resultList.innerHTML ="";
         for(var i = 0; i < result.length; i++){
-          this.appendResult(result[i]);
+            this.appendResult(result[i]);
         }
         if(searchStr.length > 0){
-          this.activeElement = this.resultList.children[0];
-          addClass(this.resultList.children[0], "active");
+            this.activeElement = this.resultList.children[0];
+            addClass(this.resultList.children[0], "active");
         }
     }
 

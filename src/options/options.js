@@ -3,10 +3,9 @@ window.onload = loadSetting;
 
 function loadSetting(callback){
     chrome.storage.sync.get('setting', function(config){
-      var opt = new OptionController(config['setting'])
+        var opt = new OptionController(config['setting'])
     })
 }
-
 
 function OptionController(setting){
     this.mountUI();
@@ -15,8 +14,9 @@ function OptionController(setting){
 
 OptionController.prototype.mountUI = function() {
     this.uiElement = {
-      'upKey' : document.getElementById('upKey'),
-      'downKey' : document.getElementById('downKey')
+        'upKey' : document.getElementById('upKey'),
+        'downKey' : document.getElementById('downKey'),
+        'numOfResult' : document.getElementById('numOfResult')
     }
 
     document.getElementById('save').addEventListener('click', this.saveSetting.bind(this));
@@ -33,10 +33,15 @@ OptionController.prototype.renderSetting = function(setting) {
 OptionController.prototype.buildSetting = function() {
     var setting = {};
     var elements = Object.keys(this.uiElement);
+    var defaultSetting = {
+        'upKey' : 38,
+        'downKey' : 40,
+        'numOfResult' : 6
+    }
 
     for(var i = 0; i < elements.length; i++){
-      var element = elements[i];
-      setting[element] = this.uiElement[element].value;
+        var element = elements[i];
+        setting[element] = this.uiElement[element].value.match(/\d+/) || defaultSetting[element];
     }
     return setting;
 };
