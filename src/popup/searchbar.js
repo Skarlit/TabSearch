@@ -38,30 +38,28 @@ false);
         //Up 
         if(event.keyCode == this.setting['upKey'] ){
             if(this.activeElement.previousSibling){
-                    removeClass(this.activeElement, "active");
+                    this.activeElement.classList.remove("active");
                     this.activeElement = this.activeElement.previousSibling;
-                    addClass(this.activeElement, "active");
+                    this.activeElement.classList.add("active");
                 }
             event.preventDefault();
         }
         //Down
         else if(event.keyCode == this.setting['downKey'] ){
             if(this.activeElement.nextSibling){
-                removeClass(this.activeElement, "active");
+                this.activeElement.classList.remove("active");
                 this.activeElement = this.activeElement.nextSibling;
-                addClass(this.activeElement, "active");
+                this.activeElement.classList.add("active");
             }
             event.preventDefault();
         }
     };
 
     TabSearch.prototype.keyInputHandler = function(event) {
-        if(!event.altKey &&
-           !event.ctrlKey &&
-           event.keyCode != this.setting['upKey'] &&
-           event.keyCode != this.setting['downKey']
-           ){
-            if(event.keyIdentifier == "Enter" && this.activeElement){
+        if (!event.altKey && !event.ctrlKey &&
+            event.keyCode != this.setting['upKey'] &&
+            event.keyCode != this.setting['downKey']) {
+            if (event.keyIdentifier == "Enter" && this.activeElement) {
                 var tabId = parseInt(this.activeElement.dataset.id);
                 chrome.tabs.get(tabId, function(tab){
                     chrome.windows.update(tab.windowId, {focused: true})
@@ -80,11 +78,10 @@ false);
 
     TabSearch.prototype.filter = function(event) {
         var searchStr = event.target.value
-        var keywords = searchStr.split(' ');
+        // Handle Japanese space char. 
+        var keywords = searchStr.split(/\u3000|\s/);
         var keywordRegex = [];
         var result = [];
-        var checked = {};
-        var matched = true;
 
         // Storing search keywords.
         for(var i = 0; i < keywords.length; i++){
@@ -93,30 +90,32 @@ false);
 
         if(searchStr.length > 0){
             for(var i = 0; i < this.tabs.length; i++){
-                for(var j = 0; j < keywordRegex.length; j++){
-                    if(this.tabs[i].url.search(keywordRegex[j]) < 0 && 
-                        this.tabs[i].title.search(keywordRegex[j]) < 0 ){
-                        matched = false;
-                    }
+                var score = 0;
+                for(var j = 0; j < keywordRegex.length; j++) {
+                    var urlMatch = keywordRegex[j].exec(this.tabs[i].url);
+                    score += urlMatch ? urlMatch.length : 0;
+
+                    var titleMatch = keywordRegex[j].exec(this.tabs[i].title);
+                    score += titleMatch ? 2 * titleMatch.length : 0;
                 }
-                if(matched){
-                    result.push(this.tabs[i])
-                    checked[this.tabs[i].id] = true;
-                }
-                matched = true;
-                if(result.length >= this.setting['numOfResult']){
-                    break;
+                if(score > 0){
+                    result.push({tab: this.tabs[i], score: score});
                 }
             }
         }
       
-        this.resultList.innerHTML ="";
+        this.resultList.innerHTML = '';
+        // Sort by score.
+        result.sort(function(tabA, tabB) {
+            return tabB.score - tabA.score;
+        });
         for(var i = 0; i < result.length; i++){
-            this.appendResult(result[i]);
+            this.appendResult(result[i].tab);
+            console.log(result[i].tab.title + ' ' + result[i].score);
         }
-        if(searchStr.length > 0){
+        if(this.resultList.children.length > 0){
             this.activeElement = this.resultList.children[0];
-            addClass(this.resultList.children[0], "active");
+            this.resultList.children[0].classList.add("active");
         }
     }
 
@@ -131,55 +130,6 @@ false);
         tabEntry.dataset.id = tab.id;
         this.resultList.appendChild(tabEntry);
     };
-
-
-    //Helper methods
-    //Simple Version of addClass, removeClass, isClass implementation
-    function addClass(domElement, classname) {
-        var case1 = new RegExp(classname + " ");
-        var case2 = new RegExp(" " + classname);
-        var case3 = new RegExp("^" + classname + "$");
-        if(domElement.className.length == 0) {
-            domElement.className += classname;
-        }
-        else if(
-            domElement.className.search(case1) < 0 &&
-            domElement.className.search(case2) < 0 &&
-            domElement.className.search(case3) < 0 ) {
-
-            domElement.className += (" " + classname);
-        }
-    }
-
-    function hasClass(domElement, classname) {
-        var case1 = new RegExp(classname + " ");
-        var case2 = new RegExp(" " + classname);
-        var case3 = new RegExp("^" + classname + "$");
-        if(
-            domElement.className.search(case1) > -1 ||
-            domElement.className.search(case2) > -1 ||
-            domElement.className.search(case3) > -1 ) {
-
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    function removeClass(domElement, classname) {
-        var case1 = new RegExp(classname + " ");
-        var case2 = new RegExp(" " + classname);
-        var case3 = new RegExp("^" + classname + "$");
-        if(domElement.className.search(case1) > -1) {
-            domElement.className = domElement.className.replace(case1, "");
-        }
-        else if(domElement.className.search(case2) > -1) {
-            domElement.className = domElement.className.replace(case2, "");
-        }
-        else if(domElement.className.search(case3) > -1) {
-            domElement.className = domElement.className.replace(case3, "");
-        }
-    }
 }(window));
 
 
