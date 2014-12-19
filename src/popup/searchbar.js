@@ -99,6 +99,7 @@ false);
                     score += titleMatch ? 2 * titleMatch.length : 0;
                 }
                 if(score > 0){
+                    console.log(this.tabs[i]);
                     result.push({tab: this.tabs[i], score: score});
                 }
             }
@@ -123,8 +124,12 @@ false);
         var tabEntry = document.createElement('li');
         var title = document.createElement('h4');
         var url = document.createElement('p');
+        var icon = document.createElement('img');
+        var selected = tab.selected;
+        icon.src = tab.favIconUrl;
         title.innerHTML = tab.title;
         url.innerHTML = tab.url;
+        tabEntry.appendChild(icon);
         tabEntry.appendChild(title);
         tabEntry.appendChild(url);
         tabEntry.dataset.id = tab.id;
