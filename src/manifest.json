@@ -10,9 +10,6 @@
     "storage"
   ],
 
-  "options_page": "options/options.html"
-  ,
-
   "icons" :{ "32" : "icon/icon_32.png",
              "48" : "icon/icon_48.png",
              "128" : "icon/icon_128.png"
