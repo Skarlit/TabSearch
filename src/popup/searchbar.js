@@ -1,28 +1,19 @@
-document.addEventListener('DOMContentLoaded', 
-    function(){ 
-        chrome.storage.sync.get('setting', function(config){
-            var ts = new TabSearch(config['setting']);     
-        })
-    }, 
-false);
+document.addEventListener('DOMContentLoaded', function() {new TabSearch();}, false);
 
 (function(root){
-    var TabSearch = root.TabSearch = function (setting){
-        if(setting){
-            this.setting = setting;
-        }else{
-            this.setting = {
-                'upKey' : 38,
-                'downKey' : 40,
-                'numOfResult' : 6
-            }
+    var TabSearch = root.TabSearch = function (){
+        this.setting = {
+            'upKey' : 38,
+            'downKey' : 40,
+            'numOfResult' : 6
         }
         //Initializing UI and keyHandling
         this.searchbar = document.getElementById('search');
+        this.resultList = document.getElementById('result');
         this.searchbar.focus();
+        this.resultList.addEventListener('mouseover', this.mouseHandler.bind(this));
         window.addEventListener('keydown', this.navigation.bind(this));
         this.searchbar.addEventListener('keyup', this.keyInputHandler.bind(this));
-        this.resultList = document.getElementById('result');
 
         //Internal Variables
         this.activeElement = null;
@@ -38,10 +29,13 @@ false);
         //Up 
         if(event.keyCode == this.setting['upKey'] ){
             if(this.activeElement.previousSibling){
-                    this.activeElement.classList.remove("active");
-                    this.activeElement = this.activeElement.previousSibling;
-                    this.activeElement.classList.add("active");
+                this.activeElement.classList.remove("active");
+                this.activeElement = this.activeElement.previousSibling;
+                this.activeElement.classList.add("active");
+                if (this.activeElement.getBoundingClientRect().top < 0) {
+                    this.activeElement.scrollIntoView(true);
                 }
+            }
             event.preventDefault();
         }
         //Down
@@ -50,6 +44,9 @@ false);
                 this.activeElement.classList.remove("active");
                 this.activeElement = this.activeElement.nextSibling;
                 this.activeElement.classList.add("active");
+                if (this.activeElement.getBoundingClientRect().bottom >= window.innerHeight) {
+                    this.activeElement.scrollIntoView(false);
+                }
             }
             event.preventDefault();
         }
@@ -110,30 +107,27 @@ false);
         result.sort(function(tabA, tabB) {
             return tabB.score - tabA.score;
         });
-        for(var i = 0; i < result.length; i++){
-            this.appendResult(result[i].tab);
-            console.log(result[i].tab.title + ' ' + result[i].score);
-        }
+ 
+        this.appendResult(result);
+
         if(this.resultList.children.length > 0){
             this.activeElement = this.resultList.children[0];
             this.resultList.children[0].classList.add("active");
         }
     }
 
-    TabSearch.prototype.appendResult = function(tab) {
-        var tabEntry = document.createElement('li');
-        var title = document.createElement('h4');
-        var url = document.createElement('p');
-        var icon = document.createElement('img');
-        var selected = tab.selected;
-        icon.src = tab.favIconUrl;
-        title.innerHTML = tab.title;
-        url.innerHTML = tab.url;
-        tabEntry.appendChild(icon);
-        tabEntry.appendChild(title);
-        tabEntry.appendChild(url);
-        tabEntry.dataset.id = tab.id;
-        this.resultList.appendChild(tabEntry);
+    TabSearch.prototype.appendResult = function(result) {
+        var htmlString = '';
+        for (var i = 0; i < result.length; i++) {
+            htmlString += (
+                '<li id="' + result[i].tab.id + '"><div class="tab-icon"><img src="' 
+                    + result[i].tab.favIconUrl + '"></img></div>' +
+                    '<div class="tab-title">' + result[i].tab.title + '</div>' +
+                    '<p class="tab-url">' + result[i].tab.url + 
+                '</p></li>');
+        }
+        this.resultList.appendChild(
+            document.createRange().createContextualFragment(htmlString));
     };
 }(window));
 
