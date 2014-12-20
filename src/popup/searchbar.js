@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {new TabSearch();}, fal
         this.searchbar = document.getElementById('search');
         this.resultList = document.getElementById('result');
         this.searchbar.focus();
-        this.resultList.addEventListener('mouseover', this.mouseHandler.bind(this));
         window.addEventListener('keydown', this.navigation.bind(this));
         this.searchbar.addEventListener('keyup', this.keyInputHandler.bind(this));
 
@@ -19,10 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {new TabSearch();}, fal
         this.activeElement = null;
 
         //Caching tabs on startup
-        var that = this;
         chrome.tabs.query({}, function(tabs){
-            that.tabs = tabs;
-        })
+            this.tabs = tabs;
+        }.bind(this))
     }
 
     TabSearch.prototype.navigation = function(event) {
@@ -96,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {new TabSearch();}, fal
                     score += titleMatch ? 2 * titleMatch.length : 0;
                 }
                 if(score > 0){
-                    console.log(this.tabs[i]);
                     result.push({tab: this.tabs[i], score: score});
                 }
             }
@@ -120,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {new TabSearch();}, fal
         var htmlString = '';
         for (var i = 0; i < result.length; i++) {
             htmlString += (
-                '<li id="' + result[i].tab.id + '"><div class="tab-icon"><img src="' 
+                '<li data-id="' + result[i].tab.id + '"><div class="tab-icon"><img src="' 
                     + result[i].tab.favIconUrl + '"></img></div>' +
                     '<div class="tab-title">' + result[i].tab.title + '</div>' +
                     '<p class="tab-url">' + result[i].tab.url + 
