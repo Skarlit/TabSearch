@@ -3,7 +3,7 @@
 
   "name": "TabSearch",
   "description": "Hopping between tabs",
-  "version": "1.0.3",
+  "version": "1.0.4",
 
   "permissions": [
     "tabs",
